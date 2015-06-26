@@ -7,7 +7,7 @@ import cProfile
 N = 20
 RANGE = range(1, 5 + 1)
 
-im = Image.open('canvas.png')
+im = Image.open('canvas2.png')
 im = im.resize((N, 20))
 
 data = list(im.getdata())
@@ -102,8 +102,8 @@ class PathGen(object):
         self.paths = []
 
     def search(self, last_board, path):
-        if len(path) == 12:
-            self.paths.append( (last_board.left, path) )
+        if len(path) == 10:
+            self.paths.append( (len(last_board.frontier), last_board.left, path) )
             return
 
         plan = []
@@ -153,7 +153,8 @@ class Tester(object):
         for color in r:
             board = last_board.clone()
             flipped = board.play(color)
-            plan.append( (flipped, color, board) )
+            if flipped:
+                plan.append( (flipped, color, board) )
 
         plan.sort(reverse=True)
         sys.stdout.write('\b' * 131)
@@ -163,17 +164,12 @@ class Tester(object):
         for flipped, color, board in plan:
             new_path = path + [color]
 
-            if flipped == 0:
-                continue
-
             if board.left == 0:
                 to_add = [color]
 
                 if self.min_length > len(new_path):
                     self.min_length = len(new_path)
                 print "SO FAR:", self.min_length, new_path
-                #if self.min_length == 24:
-                #    sys.exit(1)
                 break
             else:
                 to_add = self.search(board, new_path)
@@ -195,12 +191,14 @@ path_gen = PathGen()
 path_gen.search(board, [])
 
 paths = path_gen.paths
-paths.sort()
+#paths.sort(reverse=True)
+paths.sort(key=lambda x: x[1])
 
-for left, path in paths:
+for frontier_len, left, path in paths:
     print ' ' * 140 + '\b' * 140
-    print 'Attempt: %d left' % (left,)
+    print 'Attempt: %d left, %d in frontier' % (left, frontier_len)
     new_board = board.clone()
     for leg in path:
         new_board.play(leg)
+    #new_board.debug()
     min_path = Tester().search(new_board, path)
