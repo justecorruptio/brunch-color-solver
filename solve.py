@@ -102,8 +102,12 @@ class PathGen(object):
         self.paths = []
 
     def search(self, last_board, path):
-        if len(path) == 10:
-            self.paths.append( (len(last_board.frontier), last_board.left, path) )
+        if len(path) == 11:
+            self.paths.append((
+                len(last_board.frontier),
+                last_board.left,
+                path,
+            ))
             return
 
         plan = []
@@ -179,22 +183,28 @@ class Tester(object):
         self.cache[hx] = min_path
         return min_path
 
-board = Board(data)
+def main():
+    board = Board(data)
 
-#cProfile.run('Tester().search(board, [])')
+    #cProfile.run('Tester().search(board, [])')
 
-path_gen = PathGen()
-path_gen.search(board, [])
+    path_gen = PathGen()
+    path_gen.search(board, [])
 
-paths = path_gen.paths
-paths.sort(key=lambda x: x[1])
+    paths = path_gen.paths
+    paths.sort(key=lambda x: x[1])
+    #paths.sort(reverse=True)
 
-tester = Tester()
+    tester = Tester()
 
-for frontier_len, left, path in paths:
-    #print ' ' * 140 + '\b' * 140
-    #print 'Attempt: %d left, %d in frontier' % (left, frontier_len)
-    new_board = board.clone()
-    for leg in path:
-        new_board.play(leg)
-    min_path = tester.search(new_board, path)
+    for frontier_len, left, path in paths:
+        #print ' ' * 140 + '\b' * 140
+        #print 'Attempt: %d left, %d in frontier' % (left, frontier_len)
+        new_board = board.clone()
+        for leg in path:
+            new_board.play(leg)
+        min_path = tester.search(new_board, path)
+
+
+main()
+#cProfile.run('main()')
